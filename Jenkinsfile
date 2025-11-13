@@ -106,48 +106,7 @@ except Exception as e:
             }
         }
         
-        stage('Deploy') {
-            when {
-                // Only deploy main branch to production, feature branches to staging
-                expression { env.CHANGE_ID == null }
-            }
-            steps {
-                script {
-                    echo "Deploying to ${DEPLOY_ENV} environment"
-                    
-                    // Choose your deployment method:
-                    // Option 1: Deploy to local Docker (simple)
-                    deployToDocker()
-                    
-                    // Option 2: Deploy to Kubernetes (uncomment to use)
-                    // deployToKubernetes()
-                    
-                    // Option 3: Deploy to Docker Swarm (uncomment to use)
-                    // deployToSwarm()
-                    
-                    // Option 4: Deploy to cloud service (AWS ECS, Azure Container Instances, etc.)
-                    // deployToCloud()
-                }
-            }
-        }
         
-        stage('Health Check') {
-            steps {
-                script {
-                    echo "Running health check on deployed application"
-                    retry(3) {
-                        sleep 5
-                        sh """
-                            # Adjust URL based on your deployment
-                            curl -f http://localhost:${APP_PORT} || exit 1
-                            echo "Health check passed!"
-                        """
-                    }
-                }
-            }
-        }
-    }
-    
     post {
         success {
             echo "✓ Pipeline completed successfully!"
