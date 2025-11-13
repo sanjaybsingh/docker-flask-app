@@ -4,14 +4,14 @@
     
     environment {
         // Docker configuration
-        DOCKER_IMAGE = 'sanjaybsingh/docker-flask-app'
+        DOCKER_IMAGE = 'flask-app'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
         DOCKER_REGISTRY = 'docker.io' // Change to your registry (e.g., 'your-registry.azurecr.io')
-        DOCKER_REGISTRY_CREDENTIAL = 'sanjaybsingh' // Jenkins credential ID
+        DOCKER_REGISTRY_CREDENTIAL = 'dockerhub-credentials' // Jenkins credential ID
         
         // Kubernetes configuration (optional)
-        //KUBECONFIG_CREDENTIAL = 'kubeconfig' // Jenkins credential ID for kubeconfig file
-        //K8S_NAMESPACE = 'default'
+        KUBECONFIG_CREDENTIAL = 'kubeconfig' // Jenkins credential ID for kubeconfig file
+        K8S_NAMESPACE = 'default'
         
         // Application configuration
         APP_NAME = 'flask-docker-app'
@@ -214,4 +214,35 @@ def deployToKubernetes() {
             echo "Kubernetes deployment completed"
         """
     }
+}
+
+def deployToSwarm() {
+    echo "Deploying to Docker Swarm"
+    sh """
+        # Update or create service
+        docker service update ${APP_NAME} \
+            --image ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG} \
+            || \
+        docker service create \
+            --name ${APP_NAME} \
+            --replicas 3 \
+            --publish ${APP_PORT}:5000 \
+            ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${DOCKER_TAG}
+        
+        echo "Docker Swarm service updated"
+    """
+}
+
+def deployToCloud() {
+    echo "Deploying to cloud service"
+    // Example for AWS ECS
+    sh """
+        # Update ECS service with new task definition
+        # aws ecs update-service \
+        #     --cluster my-cluster \
+        #     --service ${APP_NAME} \
+        #     --force-new-deployment
+        
+        echo "Configure cloud deployment commands for your provider"
+    """
 }
